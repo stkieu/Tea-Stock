@@ -5,7 +5,7 @@ from MatchaScript import scrape_matchas
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask('Matcha_Watch')
-CORS(app ,origins=["https://stkieu.github.io/Tea-Stock/"])
+CORS(app ,origins=["https://stkieu.github.io"])
 
 @app.route('/matcha', methods=['GET'])
 def get_matcha():
