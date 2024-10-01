@@ -1,30 +1,62 @@
-<html lang="en"></html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <title>Matcha Stock</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,700' rel='stylesheet' type='text/css'>
-    <link href="style.css" type="text/css" rel="stylesheet">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Matcha Stock</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link href="style.css" type="text/css" rel="stylesheet" />
+    <script>
+        async function fetchProducts() {
+            const response = await fetch('https://tea-stock.onrender.com/matcha');
+            if (!response.ok) {
+                    throw new Error('Network Error');
+                }
+            const products = await response.json();
+            const productList = document.getElementById('product-list');
+
+            products.forEach(product => {
+                const li = document.createElement('li');
+                li.textContent = `${product.name} - ${product.in_stock ? 'In Stock' : 'Out of Stock'}`;
+                productList.appendChild(li);
+            });
+        }
+
+        window.onload = fetchProducts;
+    </script>
   </head>
   <body>
     <header
       class="full-width-header fixed-top w-100"
-      style="background-color: #EDDFE0"
+      style="background-color: #8ba888;"
     >
-        <div class="row">
-            <h1 class="col-sm-5" style="font-size: 37px;">Matcha Stock</h1>
-        </div>
+      <div class="container">
+        <h1 class="text-center" style="font-size: 37px;">Matcha Stock</h1>
+      </div>
     </header>
 
     <section class="jumbotron" id="jumbo">
-        <div class="container">
-          <div class="row">
-            <h2>Marukyu Koyamaen</h2>
-          </div>
-          <div class="row">
-            <h3>Principal Matchas</h3>
-          </div>
-        </div>
-      </section>
+      <div class="container text-center">
+        <h2 style="color : #f1ebe1;">Marukyu Koyamaen</h2>
+        <h3 style="color : #f1ebe1;">Principal Matchas</h3>
+      </div>
+    </section>
+    <main>
+      <h1 class= "pl-4">Product List</h1>
+      <ul id="product-list"></ul>
+    </main>
   </body>
 </html>
