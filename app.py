@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify
 from MatchaScript import scrape_matchas
 
