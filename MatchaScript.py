@@ -14,4 +14,9 @@ matcha_stock = {}
 # each list item
 for matcha in matcha_types.children:
     matcha_name = matcha.find(class_="product-name").h4.text
-    matcha_stock[matcha_name] = "unknown"
+    clases = matcha.get('class', [])
+    # MK uses classes to classify stock
+    if 'outofstock' in clases:
+        matcha_stock[matcha_name] = "0"
+    elif 'instock' in clases:
+        matcha_stock[matcha_name] = "1"
