@@ -26,13 +26,17 @@
                     throw new Error('Network Error');
                 }
             const products = await response.json();
-            const productList = document.getElementById('product-list');
+            const productList = document.getElementById('product-table');
+            productList.innerHTML = '';
 
-            products.forEach(product => {
-                const li = document.createElement('li');
-                li.textContent = `${product.name} - ${product.in_stock ? 'In Stock' : 'Out of Stock'}`;
-                productList.appendChild(li);
-            });
+            for (const [name, stock] of Object.entries(products)) {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                  <td>${name}</td>
+                  <td>${stock === "0" ? 'Out of Stock' : 'In Stock'}</td>
+              `;
+              productTableBody.appendChild(row);
+          }
         }
 
         window.onload = fetchProducts;
@@ -56,7 +60,16 @@
     </section>
     <main>
       <h1 class= "pl-4">Product List</h1>
-      <ul id="product-list"></ul>
+      <table class="table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="product-table">
+        </tbody>
+    </table>
     </main>
   </body>
 </html>

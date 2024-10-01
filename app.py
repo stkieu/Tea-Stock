@@ -1,9 +1,11 @@
 import os
 from flask import Flask, jsonify
+from flask_cors import CORS
 from MatchaScript import scrape_matchas
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask('Matcha_Watch')
+CORS(app ,origins=["https://stkieu.github.io/Tea-Stock/"])
 
 @app.route('/matcha', methods=['GET'])
 def get_matcha():
