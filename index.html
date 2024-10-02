@@ -23,8 +23,8 @@
         async function fetchProducts() {
             const response = await fetch('https://tea-stock.onrender.com/matcha');
             if (!response.ok) {
-                    throw new Error('Network Error');
-                }
+              throw new Error('Network Error');
+            }
             const products = await response.json();
             const productList = document.getElementById('product-table');
             productList.innerHTML = '';
@@ -32,10 +32,10 @@
             for (const [name, stock] of Object.entries(products)) {
               const row = document.createElement('tr');
               row.innerHTML = `
-                  <td>${name}</td>
-                  <td>${stock === "0" ? 'Out of Stock' : 'In Stock'}</td>
+                <td>${name}</td>
+                <td>${stock === "0" ? 'Out of Stock' : 'In Stock'}</td>
               `;
-              productTableBody.appendChild(row);
+              productList.appendChild(row);
           }
         }
 
