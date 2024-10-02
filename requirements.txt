@@ -3,4 +3,4 @@ flask_cors
 beautifulsoup4
 requests
 pandas
-apscheduler.schedulers.background
+apscheduler
