@@ -12,7 +12,7 @@ def get_matcha():
     matcha_stock = scrape_matchas()
     return jsonify(matcha_stock)
 scheduler = BackgroundScheduler()
-scheduler.add_job(scrape_data, 'interval', minutes=1)
+scheduler.add_job(scrape_matchas, 'interval', minutes=1)
 scheduler.start()
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
