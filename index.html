@@ -21,25 +21,29 @@
     <link href="style.css" type="text/css" rel="stylesheet" />
     <script>
         async function fetchProducts() {
-            const response = await fetch('https://tea-stock.onrender.com/matcha');
-            if (!response.ok) {
-              throw new Error('Network Error');
-            }
-            const products = await response.json();
-            const productList = document.getElementById('product-table');
-            productList.innerHTML = '';
+          const productList = document.getElementById('product-table');
+          productList.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+          const response = await fetch('https://tea-stock.onrender.com/matcha');
+          if (!response.ok) {
+            throw new Error('Network Error');
+          }
+          const products = await response.json();
+          productList.innerHTML = '';
 
-            for (const [name, stock] of Object.entries(products)) {
-              const row = document.createElement('tr');
-              row.innerHTML = `
-                <td>${name}</td>
-                <td>${stock === "0" ? 'Out of Stock' : 'In Stock'}</td>
-              `;
-              productList.appendChild(row);
+          for (const [name, stock] of Object.entries(products)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${name}</td>
+              <td class="${stock === "0" ? 'text-danger' : 'text-success'}">
+                ${stock === "0" ? 'Out of Stock' : 'In Stock'}
+              </td>
+            `;
+            productList.appendChild(row);
           }
         }
 
         window.onload = fetchProducts;
+        setInterval(fetchProducts, 300000);
     </script>
   </head>
   <body>
