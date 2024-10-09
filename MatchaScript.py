@@ -15,11 +15,12 @@ def scrape_matchas():
     # each list item
     for matcha in matcha_types.children:
         matcha_name = matcha.find(class_="product-name").h4.text
+        matcha_url = matcha.find(class_="woocommerce-loop-product__link")['href']
         classes = matcha.get('class', [])
         # MK uses classes to classify stock
         if 'outofstock' in classes:
-            matcha_stock[matcha_name] = "0"
+            matcha_stock[matcha_name] = {"stock": "0", "url" : matcha_url}
         elif 'instock' in classes:
-            matcha_stock[matcha_name] = "1"
+            matcha_stock[matcha_name] = {"stock": "1", "url" : matcha_url}
     
     return matcha_stock
