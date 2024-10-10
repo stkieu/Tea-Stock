@@ -24,7 +24,7 @@
         async function fetchProducts() {
           const productList = document.getElementById('product-table');
           productList.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
-          const response = await fetch(config.API_URL);
+          const response = await fetch("https://fn29sakep3.execute-api.us-west-2.amazonaws.com/dev");
           if (!response.ok) {
             throw new Error('Fetch Error');
           }
