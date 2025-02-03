@@ -4,7 +4,7 @@ import pandas as pd
 
 def scrape_matchas():
     # want the site with the principal matchas
-    webpage_response = requests.get("https://www.marukyu-koyamaen.co.jp/english/shop/products/category/matcha/principal/")
+    webpage_response = requests.get("https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/principal")
     webpage = webpage_response.content
     soup = BeautifulSoup(webpage, "html.parser")
 
