@@ -31,8 +31,10 @@
           const products = await response.json();
           productList.innerHTML = '';
 
-          for (const [ID, info] of Object.entries(products)) {
-            const {stock, url} = info;
+          for (let i = 0; i < products.length; i++) {
+            const product = products[i];
+            const { ID, url, stock } = product;
+            
             const row = document.createElement('tr');
             row.innerHTML = `
               <td> 
@@ -40,7 +42,7 @@
                   ${ID}
                 </a>
               </td>
-              <td class="${stock === "0" ? 'text-danger' : 'text-success'}">
+              <td class="${stock === "0" ? 'text-oos' : 'text-is'}">
                 ${stock === "0" ? 'Out of Stock' : 'In Stock'}
               </td>
             `;
