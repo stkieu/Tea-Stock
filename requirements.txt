@@ -1,5 +1,4 @@
-Flask
-flask_cors
 beautifulsoup4
+boto3
 requests
 pandas

@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import pandas as pd
+from db import store_db
 
 def scrape_matchas():
     # want the site with the principal matchas
@@ -23,15 +23,14 @@ def scrape_matchas():
         web = requests.get(matcha_url)
         webContent = BeautifulSoup(web.content, "html.parser")
         info = webContent.find('strong', class_='red')
-        
+
         if info:
             # Sazen uses strong tag to classify stock
             matcha_stock[matcha_name] = {"stock": "0", "url" : matcha_url}  
         else:
             matcha_stock[matcha_name] = {"stock": "1", "url" : matcha_url}
     
+    store_db(matcha_stock)
+    
     return matcha_stock
 
-if __name__ == "__main__":
-    matcha_stock = scrape_matchas()
-    print(matcha_stock)
