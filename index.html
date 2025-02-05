@@ -19,22 +19,24 @@
       type="text/css"
     />
     <link href="style.css" type="text/css" rel="stylesheet" />
-    <script src="config.js"></script>
     <script>
         async function fetchProducts() {
+          console.log('Fetching products...');
           const productList = document.getElementById('product-table');
           productList.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
           const response = await fetch("https://wlow96axk3.execute-api.us-west-2.amazonaws.com/dev");
           if (!response.ok) {
             throw new Error('Fetch Error');
           }
-          const products = await response.json();
+          const data = await response.json();
+          const products = JSON.parse(data.body);
+          console.log(products);
           productList.innerHTML = '';
 
           for (let i = 0; i < products.length; i++) {
             const product = products[i];
             const { ID, url, stock } = product;
-            
+
             const row = document.createElement('tr');
             row.innerHTML = `
               <td> 
@@ -46,6 +48,7 @@
                 ${stock === "0" ? 'Out of Stock' : 'In Stock'}
               </td>
             `;
+            console.log(row);
             productList.appendChild(row);
           }
         }
