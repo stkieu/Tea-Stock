@@ -1,4 +1,4 @@
 beautifulsoup4
 boto3
 requests
-pandas
+json

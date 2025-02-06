@@ -11,7 +11,16 @@ def lambda_handler(event, context):
         response = table.scan()  
         items = response['Items']
         
+        
+        formatted_items = {}
+        for item in items:
+            
+            formatted_items[item['ID']] = {
+                'url': item['url'],
+                'stock': item['stock']
+        }
         return {
+            'statusCode': 200,
             'body': json.dumps(items)
         }
         

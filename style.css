@@ -1,6 +1,10 @@
 body {
   font-family: Roboto, sans-serif;
-  background-image: url('https://content.codecademy.com/courses/learn-css-selectors-visual-rules/hypnotize_bg.png');
+  background-color:rgba(219, 204, 184, 0.265)
+}
+main {
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 header {
@@ -35,6 +39,9 @@ a {
   background-size: cover;
   color: #ffffff;
   height: 400px;
+  padding-left: 0;
+  padding-right: 0;
+
 }
 
 .jumbotron h2 {
@@ -81,6 +88,12 @@ section .row img {
   height: 300px;
 }
 
+.table-container {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  max-width: 100%;
+  margin: 20px 0;
+}
+
 figure img {
   width: 100%;
   height: auto;
@@ -92,10 +105,10 @@ figure {
 
 footer {
   font-size: 12px;
-  padding: 20px 0;
+  text-align: left;
 }
 
-footer .col-sm-8 {
+footer .col-1 {
   display: flex;
   justify-content: flex-end;
 }
