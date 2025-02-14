@@ -1,11 +1,15 @@
 import json
 from MatchaScript import scrape_matchas
+import boto3
 from db import store_db
 
 def lambda_handler(event, context):
     try:
         # Scrape matcha data
-        matcha_stock = scrape_matchas()
+        dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+        table = dynamodb.Table('Marukyu') 
+        brand = 'https://www.sazentea.com/en/products/c24-marukyu-koyamaen-matcha'  
+        matcha_stock = scrape_matchas(brand, table)
 
         store_db(matcha_stock)
 
