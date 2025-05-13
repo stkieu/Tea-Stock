@@ -9,7 +9,7 @@ def lambda_handler(event, context):
         dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
         table = dynamodb.Table('Marukyu') 
         brand = 'https://www.sazentea.com/en/products/c24-marukyu-koyamaen-matcha'  
-        matcha_stock = scrape_matchas(brand, table)
+        matcha_stock = scrape_matchas(brand)
 
         store_db(matcha_stock)
 

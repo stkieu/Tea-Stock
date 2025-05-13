@@ -33,10 +33,10 @@ def scrape_matchas(brand):
             webContent = BeautifulSoup(web.content, "html.parser")
             info = webContent.find('strong', class_='red')
 
-            if info:
-                stock_info = '0'
-            else:
+            if info == None:
                 stock_info = '1'
+            else:
+                stock_info = '0'
                 
             matcha_obj = Matcha(name=matcha_name, url=matcha_url, stock=stock_info)
             matcha_stock[matcha_name] = matcha_obj
@@ -45,4 +45,3 @@ def scrape_matchas(brand):
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data: {e}")
         return {}
-
