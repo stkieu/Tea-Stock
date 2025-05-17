@@ -4,21 +4,30 @@
 #if oos, stock should be oos, not in stock
 #if in stock. should be in stock
 #test an invalid link -> error handling
-from MatchaScript import scrape_matchas
-from MatchaScript import Matcha
+
+from Scrapers.MatchaScriptSazen import MatchaScriptSazen
+from Scrapers.matcha import Matcha
+from Scrapers.factory import get_scraper
 import requests
 import unittest
 from unittest.mock import patch, MagicMock
 
-class testMatchaScript(unittest.TestCase):
+
+class testMatchaScriptSazen(unittest.TestCase):
     
     #https://docs.python.org/3/library/unittest.mock.html we can mock the website to be scraped via unittest mock
     @patch('requests.get')
-    def test_scrape(self, mock_get):
+    def test_scrape_sazen_MK(self, mock_get):
         #need to mock matcha site rather than making requests to actual site
         mock_table = '''
         <html>
             <body>
+                <nav id="categorysubmenu" class="en">
+                    <div class="submenu-name">Matcha manufacturers:</div>
+                    <ul>
+                        <li class="active"><a href="/en/products/c24-marukyu-koyamaen-matcha">Marukyu Koyamaen</a></li>
+                    </ul
+                </nav>
                 <table class="principal">
                     <thead><tr><th>Name in<br><strong>Kanji</strong></th><th>Name in<br><strong>Latin characters</strong></th><th><strong>⚫ Koicha<br>⚪ Usucha</strong></th><th><strong>Item Code</strong></th><th>Unit price of<br><strong>20 g CAN</strong></th><th>Unit price of<br><strong>40 g CAN</strong></th><th>Unit price of<br><strong>100 g BAG</strong></th></tr></thead>
                     <tr><td><a href="/en/products/p156-matcha-wako.html">和光</a></td><td><a href="/en/products/p156-matcha-wako.html">WAKO</a></td><td class="center">⚪</td><td><a href="/en/products/p156-matcha-wako.html">MMK006</a></td><td class="r">$14.58</td><td class="r">$25.92</td><td class="r">$58.86</td></tr>  
@@ -41,11 +50,13 @@ class testMatchaScript(unittest.TestCase):
         ]
 
         #since we mocked requests.get, the function should return the mocked data rather than the real time data
-        site='https://www.sazentea.com/en/products/c24-marukyu-koyamaen-matcha' #placeholder
-        matcha_dict = scrape_matchas(site)
+        URL='https://www.sazentea.com/en/products/c24-marukyu-koyamaen-matcha' #placeholder
+        scraper_type = get_scraper('Sazen')
+        scraper = scraper_type()
+        matcha_dict = scraper.scrape_matchas(URL, 'Marukyu Koyamaen')
         expected_dict = {
-            'WAKO': Matcha (name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
-            'KINRIN': Matcha(name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
+            'WAKO': Matcha (site='Sazen', brand='Marukyu Koyamaen', name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
+            'KINRIN': Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
         }
     
         self.assertEqual(matcha_dict['WAKO'].name, expected_dict['WAKO'].name)
@@ -61,11 +72,57 @@ class testMatchaScript(unittest.TestCase):
     def test_invalid(self, mock_get):
         invalid_url = 'https://www.sazentea.com/en/products/'
         mock_get.side_effect = requests.exceptions.RequestException("Invalid URL")
-        result = scrape_matchas(invalid_url)
+        scraper = MatchaScriptSazen()
+        result = scraper.scrape_matchas(invalid_url, 'Invalid Brand')
         self.assertEqual(result, {})
+
+    @patch('requests.get')
+    def test_Sazen_YM(self, mock_get):
+        mock_table = '''
+        <html>
+            <body>
+                <nav id="categorysubmenu" class="en">
+                    <div class="submenu-name">Matcha manufacturers:</div>
+                    <ul>
+                       <li class="active"><a href="/en/products/c85-yamamasa-koyamaen-matcha">Yamamasa Koyamaen</a></li>
+                    </ul
+                </nav>
+                <table class="principal">
+                <thead><tr><th>Name in<br><strong>Kanji</strong></th><th>Name in<br><strong>Latin characters</strong></th><th><strong>⚫ Koicha<br>⚪ Usucha</strong></th><th><strong>Item Code</strong></th><th>Unit price of<br><strong>30 g CAN</strong></th><th>Unit price of<br><strong>100 g BAG</strong></th><th>Unit price of<br><strong>150 g CAN</strong></th><th>Unit price of<br><strong>300 g CAN</strong></th><th>Unit price of<br><strong>500 g BAG</strong></th><th>Unit price of<br><strong>1000 g BAG</strong></th></tr></thead>
+                <tr><td><a href="/en/products/p825-matcha-samidori.html">さみどり</a></td><td><a href="/en/products/p825-matcha-samidori.html">SAMIDORI</a></td><td class="center">⚪</td><td><a href="/en/products/p825-matcha-samidori.html">MYK010</a></td><td class="r">$9.72</td><td class="r">$27.00</td><td class="r">$43.20</td><td class="r">$79.92</td><td class="r">$127.44</td><td class="r">$251.64</td></tr>
+                <tr><td><a href="/en/products/p823-matcha-ogurayama.html">小倉山</a></td><td><a href="/en/products/p823-matcha-ogurayama.html">OGURAYAMA</a></td><td class="center">⚪</td><td><a href="/en/products/p823-matcha-ogurayama.html">MYK008</a></td><td class="r">$14.04</td><td class="r">$41.58</td><td class="r">$63.72</td><td class="r">$120.96</td><td class="r">$199.80</td><td class="r">$396.36</td></tr>
+                </table>
+            </body>
+        </html>
+            '''
         
+        #site mssgs
+        in_stock = ''
+        out_of_stock = '<strong class="red">This product is unavailable at the moment. Please visit this page again in a few weeks.</strong>'
 
+        mock_get.side_effect = [
+            MagicMock(content=mock_table.encode('utf-8')),
+            MagicMock(content=in_stock.encode('utf-8')),
+            MagicMock(content=out_of_stock.encode('utf-8'))
+        ]
 
+        expected_dict = {
+            'SAMIDORI' : Matcha(site='Sazen' , brand= 'Yamamasa Koyamaen' , name= 'SAMIDORI' , url= 'https://www.sazentea.com/en/products/p825-matcha-samidori.html' , stock= '1'),
+            'OGURAYAMA' : Matcha(site='Sazen' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.sazentea.com/en/products/p823-matcha-ogurayama.html' , stock= '0')
+        }
 
+        URL= 'https://www.sazentea.com/en/products/c85-yamamasa-koyamaen-matcha?srsltid=AfmBOor9vxCm-63u2ZHqd18fHcBzAjRQBWb7_YhSWS97tuabOVb7CG1q' #placeholder
+        scraper_type = get_scraper('Sazen')
+        scraper = scraper_type()
+        matcha_dict = scraper.scrape_matchas(URL, 'Yamamasa Koyamaen')
+
+        self.assertEqual(matcha_dict['SAMIDORI'].name, expected_dict['SAMIDORI'].name)
+        self.assertEqual(matcha_dict['SAMIDORI'].url, expected_dict['SAMIDORI'].url)
+        self.assertEqual(matcha_dict['SAMIDORI'].stock, expected_dict['SAMIDORI'].stock)
+        
+        self.assertEqual(matcha_dict['OGURAYAMA'].name, expected_dict['OGURAYAMA'].name)
+        self.assertEqual(matcha_dict['OGURAYAMA'].url, expected_dict['OGURAYAMA'].url)
+        self.assertEqual(matcha_dict['OGURAYAMA'].stock, expected_dict['OGURAYAMA'].stock)
+        
 if __name__ == '__main__':
     unittest.main()
