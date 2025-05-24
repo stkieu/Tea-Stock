@@ -1,4 +1,3 @@
-import boto3
 from botocore.exceptions import ClientError
 
 #https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html dynamoDB doc

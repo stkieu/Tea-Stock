@@ -8,16 +8,15 @@
 from Scrapers.MatchaScriptSazen import MatchaScriptSazen
 from Scrapers.matcha import Matcha
 from Scrapers.factory import get_scraper
-import requests
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, AsyncMock, MagicMock
 
 
 class testMatchaScriptSazen(unittest.TestCase):
     
     #https://docs.python.org/3/library/unittest.mock.html we can mock the website to be scraped via unittest mock
-    @patch('requests.get')
-    def test_scrape_sazen_MK(self, mock_get):
+    @patch('aiohttp.ClientSession.get')
+    async def test_scrape_sazen_MK(self, mock_get):
         #need to mock matcha site rather than making requests to actual site
         mock_table = '''
         <html>
@@ -44,16 +43,20 @@ class testMatchaScriptSazen(unittest.TestCase):
         #need magic mock https://docs.python.org/3/library/unittest.mock.html#magicmock-and-magic-method-support for request
         #mocking sequential request.get calls:
         mock_get.side_effect = [
-            MagicMock(content=mock_table.encode('utf-8')),
-            MagicMock(content=out_of_stock.encode('utf-8')),  # set wako out of stock
-            MagicMock(content=in_stock.encode('utf-8'))  # set kinrin in stock
+            AsyncMock(**{'text.return_value': mock_table}),
+            AsyncMock(**{'text.return_value': out_of_stock}),
+            AsyncMock(**{'text.return_value': in_stock})
         ]
+
 
         #since we mocked requests.get, the function should return the mocked data rather than the real time data
         URL='https://www.sazentea.com/en/products/c24-marukyu-koyamaen-matcha' #placeholder
         scraper_type = get_scraper('Sazen')
-        scraper = scraper_type()
-        matcha_dict = scraper.scrape_matchas(URL, 'Marukyu Koyamaen')
+
+        async with patch('aiohttp.ClientSession')() as session:
+                session.get = mock_get
+                matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Marukyu Koyamaen')
+
         expected_dict = {
             'WAKO': Matcha (site='Sazen', brand='Marukyu Koyamaen', name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
             'KINRIN': Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
@@ -68,16 +71,18 @@ class testMatchaScriptSazen(unittest.TestCase):
         self.assertEqual(matcha_dict['KINRIN'].stock, expected_dict['KINRIN'].stock)
     
     
-    @patch('requests.get')
-    def test_invalid(self, mock_get):
+    @patch('aiohttp.ClientSession.get')
+    async def test_invalid(self, mock_get):
         invalid_url = 'https://www.sazentea.com/en/products/'
-        mock_get.side_effect = requests.exceptions.RequestException("Invalid URL")
-        scraper = MatchaScriptSazen()
-        result = scraper.scrape_matchas(invalid_url, 'Invalid Brand')
+        mock_get.side_effect = aiohttp.ClientError("Invalid URL")
+        scraper_type = MatchaScriptSazen()
+        async with patch('aiohttp.ClientSession')() as session:
+            session.get = mock_get
+            result = await scraper_type.scrape_matchas(session, invalid_url, 'Invalid Brand')
         self.assertEqual(result, {})
 
-    @patch('requests.get')
-    def test_Sazen_YM(self, mock_get):
+    @patch('aiohttp.ClientSession.get')
+    async def test_Sazen_YM(self, mock_get):
         mock_table = '''
         <html>
             <body>
@@ -101,9 +106,10 @@ class testMatchaScriptSazen(unittest.TestCase):
         out_of_stock = '<strong class="red">This product is unavailable at the moment. Please visit this page again in a few weeks.</strong>'
 
         mock_get.side_effect = [
-            MagicMock(content=mock_table.encode('utf-8')),
-            MagicMock(content=in_stock.encode('utf-8')),
-            MagicMock(content=out_of_stock.encode('utf-8'))
+            AsyncMock(**{'text.return_value': mock_table}),
+            AsyncMock(**{'text.return_value': in_stock}),
+            AsyncMock(**{'text.return_value': out_of_stock})
+            
         ]
 
         expected_dict = {
@@ -114,7 +120,9 @@ class testMatchaScriptSazen(unittest.TestCase):
         URL= 'https://www.sazentea.com/en/products/c85-yamamasa-koyamaen-matcha?srsltid=AfmBOor9vxCm-63u2ZHqd18fHcBzAjRQBWb7_YhSWS97tuabOVb7CG1q' #placeholder
         scraper_type = get_scraper('Sazen')
         scraper = scraper_type()
-        matcha_dict = scraper.scrape_matchas(URL, 'Yamamasa Koyamaen')
+        async with patch('aiohttp.ClientSession')() as session:
+                session.get = mock_get
+                matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Yamamasa Koyamaen')
 
         self.assertEqual(matcha_dict['SAMIDORI'].name, expected_dict['SAMIDORI'].name)
         self.assertEqual(matcha_dict['SAMIDORI'].url, expected_dict['SAMIDORI'].url)
