@@ -131,7 +131,7 @@ class testMatchaScriptSazen(unittest.TestCase):
         self.assertEqual(matcha_dict['OGURAYAMA'].url, expected_dict['OGURAYAMA'].url)
         self.assertEqual(matcha_dict['OGURAYAMA'].stock, expected_dict['OGURAYAMA'].stock)
 
-class testMatchaScriptMatchaJP:
+class testMatchaScriptMatchaJP(unittest.TestCase):
      
     @patch('aiohttp.ClientSession.get')
     async def test_scrape_MatchaJP(self,mock_get):
