@@ -1,6 +1,7 @@
 from Scrapers.MatchaScriptInterface import MatchaScriptInterface
 from Scrapers.matcha import Matcha
 from Dict.Registry import ScraperRegistry
+import asyncio
 
 @ScraperRegistry.register("Sazen")
 class MatchaScriptSazen(MatchaScriptInterface):

@@ -10,9 +10,15 @@ from Scrapers.matcha import Matcha
 from Scrapers.factory import get_scraper
 import unittest
 from unittest.mock import patch, AsyncMock, MagicMock
+import aiohttp
 
 
-class testMatchaScriptSazen(unittest.TestCase):
+class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
+    @staticmethod
+    def make_mock_response(html_text):
+            mock_response = MagicMock()
+            mock_response.__aenter__.return_value.text = AsyncMock(return_value=html_text)
+            return mock_response
     
     #https://docs.python.org/3/library/unittest.mock.html we can mock the website to be scraped via unittest mock
     @patch('aiohttp.ClientSession.get')
@@ -35,48 +41,40 @@ class testMatchaScriptSazen(unittest.TestCase):
             </body>
         </html>
             '''
-        
-        #site mssgs
-        in_stock = ''
-        out_of_stock = '<strong class="red">This product is unavailable at the moment. Please visit this page again in a few weeks.</strong>'
-
-        #need magic mock https://docs.python.org/3/library/unittest.mock.html#magicmock-and-magic-method-support for request
-        #mocking sequential request.get calls:
-        mock_get.side_effect = [
-            AsyncMock(**{'text.return_value': mock_table}),
-            AsyncMock(**{'text.return_value': out_of_stock}),
-            AsyncMock(**{'text.return_value': in_stock})
-        ]
-
-
-        #since we mocked requests.get, the function should return the mocked data rather than the real time data
         URL='https://www.sazentea.com/en/products/c24-marukyu-koyamaen-matcha' #placeholder
-        scraper_type = get_scraper('Sazen')
+        scraper = get_scraper('Sazen')
+        scraper_type = scraper()
 
-        async with patch('aiohttp.ClientSession')() as session:
-                session.get = mock_get
+        #site mssgs
+        #want to mock session and get
+        out_of_stock = '<strong class="red">This product is unavailable at the moment. Please visit this page again in a few weeks.</strong>'
+        in_stock = ''
+
+        mock_get.side_effect = [
+            self.make_mock_response(mock_table),
+            self.make_mock_response(out_of_stock),
+            self.make_mock_response(in_stock)
+        ]
+   
+        
+        async with aiohttp.ClientSession() as session:
                 matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Marukyu Koyamaen')
 
         expected_dict = {
             'WAKO': Matcha (site='Sazen', brand='Marukyu Koyamaen', name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
             'KINRIN': Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
         }
-    
-        self.assertEqual(matcha_dict['WAKO'].name, expected_dict['WAKO'].name)
-        self.assertEqual(matcha_dict['WAKO'].url, expected_dict['WAKO'].url)
-        self.assertEqual(matcha_dict['WAKO'].stock, expected_dict['WAKO'].stock)
-        
-        self.assertEqual(matcha_dict['KINRIN'].name, expected_dict['KINRIN'].name)
-        self.assertEqual(matcha_dict['KINRIN'].url, expected_dict['KINRIN'].url)
-        self.assertEqual(matcha_dict['KINRIN'].stock, expected_dict['KINRIN'].stock)
-    
+        for key in expected_dict:
+            self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
+            self.assertEqual(matcha_dict[key].url, expected_dict[key].url)
+            self.assertEqual(matcha_dict[key].stock, expected_dict[key].stock)    
     
     @patch('aiohttp.ClientSession.get')
     async def test_invalid(self, mock_get):
         invalid_url = 'https://www.sazentea.com/en/products/'
         mock_get.side_effect = aiohttp.ClientError("Invalid URL")
         scraper_type = MatchaScriptSazen()
-        async with patch('aiohttp.ClientSession')() as session:
+        async with aiohttp.ClientSession() as session:
             session.get = mock_get
             result = await scraper_type.scrape_matchas(session, invalid_url, 'Invalid Brand')
         self.assertEqual(result, {})
@@ -106,10 +104,9 @@ class testMatchaScriptSazen(unittest.TestCase):
         out_of_stock = '<strong class="red">This product is unavailable at the moment. Please visit this page again in a few weeks.</strong>'
 
         mock_get.side_effect = [
-            AsyncMock(**{'text.return_value': mock_table}),
-            AsyncMock(**{'text.return_value': in_stock}),
-            AsyncMock(**{'text.return_value': out_of_stock})
-            
+            self.make_mock_response(mock_table),
+            self.make_mock_response(in_stock),
+            self.make_mock_response(out_of_stock)
         ]
 
         expected_dict = {
@@ -118,46 +115,56 @@ class testMatchaScriptSazen(unittest.TestCase):
         }
 
         URL= 'https://www.sazentea.com/en/products/c85-yamamasa-koyamaen-matcha?srsltid=AfmBOor9vxCm-63u2ZHqd18fHcBzAjRQBWb7_YhSWS97tuabOVb7CG1q' #placeholder
-        scraper_type = get_scraper('Sazen')
-        async with patch('aiohttp.ClientSession')() as session:
-                session.get = mock_get
+        scraper = get_scraper('Sazen')
+        scraper_type = scraper()
+
+        async with aiohttp.ClientSession() as session:
                 matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Yamamasa Koyamaen')
-
-        self.assertEqual(matcha_dict['SAMIDORI'].name, expected_dict['SAMIDORI'].name)
-        self.assertEqual(matcha_dict['SAMIDORI'].url, expected_dict['SAMIDORI'].url)
-        self.assertEqual(matcha_dict['SAMIDORI'].stock, expected_dict['SAMIDORI'].stock)
         
-        self.assertEqual(matcha_dict['OGURAYAMA'].name, expected_dict['OGURAYAMA'].name)
-        self.assertEqual(matcha_dict['OGURAYAMA'].url, expected_dict['OGURAYAMA'].url)
-        self.assertEqual(matcha_dict['OGURAYAMA'].stock, expected_dict['OGURAYAMA'].stock)
+        for key in expected_dict:
+            self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
+            self.assertEqual(matcha_dict[key].url, expected_dict[key].url)
+            self.assertEqual(matcha_dict[key].stock, expected_dict[key].stock)
 
-class testMatchaScriptMatchaJP(unittest.TestCase):
-     
+class testMatchaScriptMatchaJP(unittest.IsolatedAsyncioTestCase):
+    @staticmethod
+    def make_mock_response(html_text):
+            mock_response = MagicMock()
+            mock_response.__aenter__.return_value.text = AsyncMock(return_value=html_text)
+            return mock_response
+    
     @patch('aiohttp.ClientSession.get')
     async def test_scrape_MatchaJP(self,mock_get):
         mock_table = ''' 
         <html>
+            <head>
+                <meta property="og:title" content="KOYAMAEN Matcha Powder">
+            </head>
             <body>
-                <li>
-                    <a href="/collections/koyamaen-matcha-powder" class="mega-menu__link mega-menu__link--level-2 link">
-                    YAMAMASA-KOYAMAEN
-                    </a>
-                    <ul class="list-unstyled" role="list">
-                        <li>
-                            <a href="/collections/shikibu-no-mukashi" class="mega-menu__link link">
-                            SHIKIBU-NO-MUKASHI
-                            </a>
-                        </li><li>
-                            <a href="/collections/ogurayama" class="mega-menu__link link">
-                            OGURAYAMA
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                <ul class="list-menu list-menu--inline" role="list">
+                    <li>
+                        <a href="/collections/koyamaen-matcha-powder" class="mega-menu__link mega-menu__link--level-2 link">
+                        YAMAMASA-KOYAMAEN
+                        </a>
+                        <ul class="list-unstyled" role="list">
+                            <li>
+                                <a href="/collections/shikibu-no-mukashi" class="mega-menu__link link">
+                                SHIKIBU-NO-MUKASHI
+                                </a>
+                            </li><li>
+                                <a href="/collections/ogurayama" class="mega-menu__link link">
+                                OGURAYAMA
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
             </body>
         </html>
         '''
-
+        URL="https://www.matchajp.net/Koyamaen"
+        scraper = get_scraper('MatchaJP')
+        scraper_type = scraper()
         #MatchaJP has different links for different sizes upon first size in stock-> update to matcha in stock, stop and provide link to page with the sizes
         #otherwise, if all out of stock, mark OOS
         #card badge bottom left doesnt contain sold out on product card. Just mock one card each
@@ -179,10 +186,11 @@ class testMatchaScriptMatchaJP(unittest.TestCase):
             </ul>
             
         ''' 
+
         mock_get.side_effect = [
-            AsyncMock(**{'text.return_value': mock_table}),
-            AsyncMock(**{'text.return_value': out_of_stock}),
-            AsyncMock(**{'text.return_value': in_stock})
+            self.make_mock_response(mock_table),
+            self.make_mock_response(in_stock),
+            self.make_mock_response(out_of_stock)
         ]
 
         expected_dict = {
@@ -190,19 +198,84 @@ class testMatchaScriptMatchaJP(unittest.TestCase):
             'OGURAYAMA' : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.matchajp.net/collections/ogurayama' , stock= '0')
         }
 
-        URL="https://www.matchajp.net/"
-        scraper_type = get_scraper('MatchaJP')
-        async with patch('aiohttp.ClientSession')() as session:
-                session.get = mock_get
+        async with aiohttp.ClientSession() as session:
                 matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Yamamasa Koyamaen')
 
-        self.assertEqual(matcha_dict['SHIKIBU-NO-MUKASHI'].name, expected_dict['SHIKIBU-NO-MUKASHI'].name)
-        self.assertEqual(matcha_dict['SHIKIBU-NO-MUKASHI'].url, expected_dict['SHIKIBU-NO-MUKASHI'].url)
-        self.assertEqual(matcha_dict['SHIKIBU-NO-MUKASHI'].stock, expected_dict['SHIKIBU-NO-MUKASHI'].stock)
+        for key in expected_dict:
+            self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
+            self.assertEqual(matcha_dict[key].url, expected_dict[key].url)
+            self.assertEqual(matcha_dict[key].stock, expected_dict[key].stock)
+
+    @patch('aiohttp.ClientSession.get')
+    async def test_scrape_MatchaJP_invalid(self,mock_get):
+        invalid_url = 'https://www.matchajp.net/INVALID'
+        mock_get.side_effect = aiohttp.ClientError("Invalid URL")
+        scraper = get_scraper('MatchaJP')
+        scraper_type = scraper()
+        async with aiohttp.ClientSession() as session:
+            result = await scraper_type.scrape_matchas(session, invalid_url, 'Invalid Brand')
+        self.assertEqual(result, {})
+    
+    @patch('aiohttp.ClientSession.get')
+    async def test_scrape_MatchaJP_IS(self,mock_get):
+        mock_table = ''' 
+        <html>
+            <head>
+                <meta property="og:title" content="KOYAMAEN Matcha Powder">
+            </head>
+            <body>
+                <ul class="list-menu list-menu--inline" role="list">
+                    <li>
+                        <a href="/collections/koyamaen-matcha-powder" class="mega-menu__link mega-menu__link--level-2 link">
+                        YAMAMASA-KOYAMAEN
+                        </a>
+                        <ul class="list-unstyled" role="list">
+                            <li>
+                                <a href="/collections/ogurayama" class="mega-menu__link link">
+                                OGURAYAMA
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </body>
+        </html>
+        '''
+        #make 3 ogurayama cards with the last one in stock
+        list_mock ='''
+                <ul class="product-grid">
+                    <li class="grid__item">
+                        <div class="card__badge bottom left"> 
+                            <span id="NoMediaStandardBadge-template--15972096409753__product-grid-7625103736985" class="badge badge--bottom-left color-background-1">Sold out</span>
+                        </div>
+                    </li>
+                    <li class="grid__item">
+                        <div class="card__badge bottom left">
+                            <span id="NoMediaStandardBadge-template--15972096409753__product-grid-7625103736985" class="badge badge--bottom-left color-background-1">Sold out</span>
+                        </div>
+                    </li>
+                    <li class="grid__item">
+                        <div class="card__badge bottom left"></div>
+                    </li>
+                </ul>
+            '''
+        mock_get.side_effect = [
+            self.make_mock_response(mock_table),
+            self.make_mock_response(list_mock)
+        ]
+        expected_dict = {
+            'OGURAYAMA' : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.matchajp.net/collections/ogurayama' , stock= '1')
+        }
+        URL="https://www.matchajp.net/Koyamaen"
+        scraper = get_scraper('MatchaJP')
+        scraper_type = scraper()
+        async with aiohttp.ClientSession() as session:
+                matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Yamamasa Koyamaen')
+
+        for key in expected_dict:
+            self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
+            self.assertEqual(matcha_dict[key].url, expected_dict[key].url)
+            self.assertEqual(matcha_dict[key].stock, expected_dict[key].stock)
         
-        self.assertEqual(matcha_dict['OGURAYAMA'].name, expected_dict['OGURAYAMA'].name)
-        self.assertEqual(matcha_dict['OGURAYAMA'].url, expected_dict['OGURAYAMA'].url)
-        self.assertEqual(matcha_dict['OGURAYAMA'].stock, expected_dict['OGURAYAMA'].stock)
-     
 if __name__ == '__main__':
     unittest.main()
