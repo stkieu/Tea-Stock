@@ -243,22 +243,22 @@ class testMatchaScriptMatchaJP(unittest.IsolatedAsyncioTestCase):
         '''
         #make 3 ogurayama cards with the last one in stock
         list_mock ='''
-                <ul class="product-grid">
-                    <li class="grid__item">
-                        <div class="card__badge bottom left"> 
-                            <span id="NoMediaStandardBadge-template--15972096409753__product-grid-7625103736985" class="badge badge--bottom-left color-background-1">Sold out</span>
-                        </div>
-                    </li>
-                    <li class="grid__item">
-                        <div class="card__badge bottom left">
-                            <span id="NoMediaStandardBadge-template--15972096409753__product-grid-7625103736985" class="badge badge--bottom-left color-background-1">Sold out</span>
-                        </div>
-                    </li>
-                    <li class="grid__item">
-                        <div class="card__badge bottom left"></div>
-                    </li>
-                </ul>
-            '''
+            <ul class="product-grid">
+                <li class="grid__item">
+                    <div class="card__badge bottom left"> 
+                        <span id="NoMediaStandardBadge-template--15972096409753__product-grid-7625103736985" class="badge badge--bottom-left color-background-1">Sold out</span>
+                    </div>
+                </li>
+                <li class="grid__item">
+                    <div class="card__badge bottom left">
+                        <span id="NoMediaStandardBadge-template--15972096409753__product-grid-7625103736985" class="badge badge--bottom-left color-background-1">Sold out</span>
+                    </div>
+                </li>
+                <li class="grid__item">
+                    <div class="card__badge bottom left"></div>
+                </li>
+            </ul>
+        '''
         mock_get.side_effect = [
             self.make_mock_response(mock_table),
             self.make_mock_response(list_mock)
@@ -276,6 +276,61 @@ class testMatchaScriptMatchaJP(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
             self.assertEqual(matcha_dict[key].url, expected_dict[key].url)
             self.assertEqual(matcha_dict[key].stock, expected_dict[key].stock)
-        
+    
+    @patch('aiohttp.ClientSession.get')
+    async def test_scrape_MatchaJP_Hekisuien(self,mock_get):
+        mock_table = ''' 
+        <html>
+            <head>
+                <meta property="og:title" content="HEKISUIEN">
+            </head>
+            <body>
+                <ul class="list-menu list-menu--inline" role="list">
+                    <li>
+                        <a href="/collections/hekisuien" class="mega-menu__link mega-menu__link--level-2 link mega-menu__link--active" aria-current="page">
+                            HEKISUIEN
+                        </a>
+                        <ul class="list-unstyled" role="list">
+                            <li>
+                                <a href="/collections/shien" class="mega-menu__link link">
+                                    SHIEN
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </body>
+        </html>
+        '''
+    
+        out_of_stock = '''
+            <ul class="product-grid">
+                <li class="grid__item">
+                    <div class="card__badge bottom left">
+                        <span id="NoMediaStandardBadge-template--15972096409753__product-grid-7625103736985" class="badge badge--bottom-left color-background-1">Sold out</span>
+                    </div>
+                </li>
+            </ul>
+            
+        ''' 
+        mock_get.side_effect = [
+            self.make_mock_response(mock_table),
+            self.make_mock_response(out_of_stock)
+        ]
+
+        expected_dict = {
+            'SHIEN' : Matcha(site='MatchaJP' , brand= 'Hekisuien' , name= 'SHIEN' , url= 'https://www.matchajp.net/collections/shien' , stock= '0')
+        }
+        URL="https://www.matchajp.net/Hekisuien"
+        scraper = get_scraper('MatchaJP')
+        scraper_type = scraper()
+        async with aiohttp.ClientSession() as session:
+                matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Hekisuien')
+
+        for key in expected_dict:
+            self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
+            self.assertEqual(matcha_dict[key].url, expected_dict[key].url)
+            self.assertEqual(matcha_dict[key].stock, expected_dict[key].stock)
+
 if __name__ == '__main__':
     unittest.main()
