@@ -36,7 +36,7 @@ class MatchaScriptSazen(MatchaScriptInterface):
                     stock_info = '0'
                     
                 matcha_obj = Matcha(site=matcha_site, brand= matcha_brand, name=matcha_name, url=matcha_url, stock=stock_info)
-                matcha_stock[matcha_name] = matcha_obj
+                matcha_stock[(matcha_name, matcha_site)] = matcha_obj
 
             return matcha_stock
         except Exception as e:

@@ -18,49 +18,72 @@ class testDB(unittest.TestCase):
     
     def test_new(self):
         #test dictionary that we would get from MatchaScript
-        matcha_stock = {'WAKO': Matcha(site='Sazen', brand='Marukyu Koyamaen', name='WAKO', url='https://www.sazentea.com/en/products/p156-matcha-wako.html', stock='0')}
+        matcha_stock = {
+            ('WAKO', 'Sazen'): Matcha(
+            site='Sazen',
+            brand='Marukyu Koyamaen',
+            name='WAKO',
+            url='https://www.sazentea.com/en/products/p156-matcha-wako.html',
+            stock='0'
+            )
+        }
         store_db(matcha_stock, table)
 
-        table_item = table.get_item(Key={'ID':'WAKO'})
-        self.assertEqual(table_item['Item'].get('site'), 'Sazen')
-        self.assertEqual(table_item['Item'].get('brand'), 'Marukyu Koyamaen')
-        self.assertEqual(table_item['Item'].get('url'), 'https://www.sazentea.com/en/products/p156-matcha-wako.html')
-        self.assertEqual(table_item['Item'].get('stock'), '0')
+        table_item = table.get_item(Key={'ID':'WAKO' , 'site':'Sazen'})
+        item = table_item['Item']
+        
+        self.assertEqual(item.get('site'), 'Sazen')
+        self.assertEqual(item.get('brand'), 'Marukyu Koyamaen')
+        self.assertEqual(item.get('url'), 'https://www.sazentea.com/en/products/p156-matcha-wako.html')
+        self.assertEqual(item.get('stock'), '0')
         #clear DB after we're done
         table.delete_item(
             Key = {
-                'ID': 'WAKO'
+                'ID': 'WAKO',
+                'site' : 'Sazen'
             }
         )
     def test_stock(self):
-        matcha_stock = {'WAKO': Matcha(site='Sazen', brand='Marukyu Koyamaen', name='WAKO', url='https://www.sazentea.com/en/products/p156-matcha-wako.html', stock='0')}
+        matcha_stock = {
+            ('WAKO', 'Sazen'): Matcha(
+                site='Sazen', 
+                brand='Marukyu Koyamaen', 
+                name='WAKO', 
+                url='https://www.sazentea.com/en/products/p156-matcha-wako.html', 
+                stock='0'
+            )
+        }
         store_db(matcha_stock, table)
 
 
-        matcha_stock['WAKO'].stock = '1'
+        matcha_stock[('WAKO', 'Sazen')].stock = '1'
         store_db(matcha_stock, table)
-        table_item = table.get_item(Key={'ID':'WAKO'})
-        self.assertEqual(table_item['Item'].get('stock'), '1')
+        table_item = table.get_item(Key={'ID':'WAKO' , 'site':'Sazen'})
+        item = table_item['Item']
+        self.assertEqual(item.get('stock'), '1')
         table.delete_item(
             Key = {
-                'ID': 'WAKO'
+                'ID': 'WAKO',
+                'site' : 'Sazen'
             }
         )
     def test_url(self):
-        matcha_stock = {'WAKO': Matcha(site='Sazen', brand='Marukyu Koyamaen', name='WAKO', url='https://www.sazentea.com/en/products/p155-matcha-kinrin.html', stock='0')}
+        matcha_stock = {('WAKO', 'Sazen'): Matcha(site='Sazen', brand='Marukyu Koyamaen', name='WAKO', url='https://www.sazentea.com/en/products/p155-matcha-kinrin.html', stock='0')}
         store_db(matcha_stock, table)
 
-        matcha_stock['WAKO'].url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'
-        matcha_stock['WAKO'].stock = '1'
+        matcha_stock[('WAKO', 'Sazen')].url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'
+        matcha_stock[('WAKO', 'Sazen')].stock = '1'
         store_db(matcha_stock, table)
 
-        table_item = table.get_item(Key={'ID':'WAKO'})
-        self.assertEqual(table_item['Item'].get('url'), 'https://www.sazentea.com/en/products/p156-matcha-wako.html')
-        self.assertEqual(table_item['Item'].get('stock'), '1')
+        table_item = table.get_item(Key={'ID':'WAKO' , 'site':'Sazen'})
+        item = table_item['Item']
+        self.assertEqual(item.get('url'), 'https://www.sazentea.com/en/products/p156-matcha-wako.html')
+        self.assertEqual(item.get('stock'), '1')
 
         table.delete_item(
         Key = {
-            'ID': 'WAKO'
+            'ID': 'WAKO',
+            'site':'Sazen'
         }
     )
 

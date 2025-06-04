@@ -3,7 +3,7 @@ import boto3
 
 
 dynamodb = boto3.resource('dynamodb') 
-table = dynamodb.Table('Marukyu')  #connect to db
+table = dynamodb.Table('Matcha')  #connect to db
 
 def lambda_handler(event, context):
     try:

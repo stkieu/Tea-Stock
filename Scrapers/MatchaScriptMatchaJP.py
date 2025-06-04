@@ -51,7 +51,7 @@ class MatchaScriptMatchaJP(MatchaScriptInterface):
                             stock_info = '1'  # in stock
                             break #break only when we find one in stock otherwise continue checking
                 matcha_obj = Matcha(site=matcha_site, brand= brand, name=matcha_name, url=matcha_url, stock=stock_info)
-                matcha_stock[matcha_name] = matcha_obj
+                matcha_stock[(matcha_name, matcha_site)] = matcha_obj
 
             return matcha_stock
         

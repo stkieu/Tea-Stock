@@ -16,7 +16,7 @@ async def async_lambda_handler(event, context):
     try:
         # Scrape matcha data
         dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-        table = dynamodb.Table('Marukyu')
+        table = dynamodb.Table('Matcha')
 
         all_matcha_data={}
         # reference: https://www.scrapingbee.com/blog/async-scraping-in-python/#asyncio-featurefunction-overview
