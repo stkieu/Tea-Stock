@@ -1,6 +1,6 @@
 import json
 import boto3
-from db import store_db
+from FASTAPI.app.db import store_db
 from Dict.BrandDict import Brands_Dictionary
 from Scrapers.factory import get_scraper
 from Scrapers import *

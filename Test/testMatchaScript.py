@@ -61,8 +61,8 @@ class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
                 matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Marukyu Koyamaen')
 
         expected_dict = {
-            'WAKO': Matcha (site='Sazen', brand='Marukyu Koyamaen', name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
-            'KINRIN': Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
+            ('WAKO', 'Sazen'): Matcha (site='Sazen', brand='Marukyu Koyamaen', name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
+            ('KINRIN', 'Sazen'): Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
         }
         for key in expected_dict:
             self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
@@ -110,8 +110,8 @@ class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
         ]
 
         expected_dict = {
-            'SAMIDORI' : Matcha(site='Sazen' , brand= 'Yamamasa Koyamaen' , name= 'SAMIDORI' , url= 'https://www.sazentea.com/en/products/p825-matcha-samidori.html' , stock= '1'),
-            'OGURAYAMA' : Matcha(site='Sazen' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.sazentea.com/en/products/p823-matcha-ogurayama.html' , stock= '0')
+            ('SAMIDORI', 'Sazen') : Matcha(site='Sazen' , brand= 'Yamamasa Koyamaen' , name= 'SAMIDORI' , url= 'https://www.sazentea.com/en/products/p825-matcha-samidori.html' , stock= '1'),
+            ('OGURAYAMA', 'Sazen') : Matcha(site='Sazen' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.sazentea.com/en/products/p823-matcha-ogurayama.html' , stock= '0')
         }
 
         URL= 'https://www.sazentea.com/en/products/c85-yamamasa-koyamaen-matcha?srsltid=AfmBOor9vxCm-63u2ZHqd18fHcBzAjRQBWb7_YhSWS97tuabOVb7CG1q' #placeholder
@@ -194,8 +194,8 @@ class testMatchaScriptMatchaJP(unittest.IsolatedAsyncioTestCase):
         ]
 
         expected_dict = {
-            'SHIKIBU-NO-MUKASHI' : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'SHIKIBU-NO-MUKASHI' , url= 'https://www.matchajp.net/collections/shikibu-no-mukashi' , stock= '1'),
-            'OGURAYAMA' : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.matchajp.net/collections/ogurayama' , stock= '0')
+            ('SHIKIBU-NO-MUKASHI', 'MatchaJP') : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'SHIKIBU-NO-MUKASHI' , url= 'https://www.matchajp.net/collections/shikibu-no-mukashi' , stock= '1'),
+            ('OGURAYAMA', 'MatchaJP') : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.matchajp.net/collections/ogurayama' , stock= '0')
         }
 
         async with aiohttp.ClientSession() as session:
@@ -264,7 +264,7 @@ class testMatchaScriptMatchaJP(unittest.IsolatedAsyncioTestCase):
             self.make_mock_response(list_mock)
         ]
         expected_dict = {
-            'OGURAYAMA' : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.matchajp.net/collections/ogurayama' , stock= '1')
+            ('OGURAYAMA', 'MatchaJP') : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.matchajp.net/collections/ogurayama' , stock= '1')
         }
         URL="https://www.matchajp.net/Koyamaen"
         scraper = get_scraper('MatchaJP')
@@ -319,7 +319,7 @@ class testMatchaScriptMatchaJP(unittest.IsolatedAsyncioTestCase):
         ]
 
         expected_dict = {
-            'SHIEN' : Matcha(site='MatchaJP' , brand= 'Hekisuien' , name= 'SHIEN' , url= 'https://www.matchajp.net/collections/shien' , stock= '0')
+            ('SHIEN', 'MatchaJP') : Matcha(site='MatchaJP' , brand= 'Hekisuien' , name= 'SHIEN' , url= 'https://www.matchajp.net/collections/shien' , stock= '0')
         }
         URL="https://www.matchajp.net/Hekisuien"
         scraper = get_scraper('MatchaJP')
