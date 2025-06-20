@@ -4,7 +4,7 @@
 #update only stock -> expect only stock to be updated
 #update both stock and URL -> expect both stock and URL to be updated
 import unittest
-import FASTAPI.app.db as db
+import FASTAPI.db as db
 from Scrapers.matcha import Matcha
 import boto3
 
