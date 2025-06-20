@@ -164,6 +164,43 @@ class testDB(unittest.TestCase):
                 }
             )
 
+#test get all
+    def test_get_all(self):
+        mock_dict = {
+            ('WAKO', 'Sazen'): Matcha (site='Sazen', brand='Marukyu Koyamaen', name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
+            ('KINRIN', 'Sazen'): Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html'),
+            ('SHIKIBU-NO-MUKASHI', 'Sazen') : Matcha(site='Sazen' , brand= 'Yamamasa Koyamaen' , name= 'SHIKIBU-NO-MUKASHI' , url= 'https://www.sazentea.com/en/products/p822-matcha-shikibu-no-mukashi.html' , stock= '1'),
+            ('OGURAYAMA', 'MatchaJP') : Matcha(site='MatchaJP' , brand= 'Yamamasa Koyamaen' , name= 'OGURAYAMA' , url= 'https://www.matchajp.net/collections/ogurayama' , stock= '0')        
+        }
+        
+        db.store_db(mock_dict, table)
+        items = db.db_get_all(table)
+        result_dict = {
+            (item['ID'], item['site']): Matcha(
+                site=item['site'],
+                brand=item['brand'],
+                name=item['ID'],
+                url=item['url'],
+                stock=item['stock']
+            )
+            for item in items
+        }
+        for key in mock_dict:
+            actual = result_dict.get(key)
+            expected = mock_dict[key]
+            
+            self.assertEqual(actual.site, expected.site)
+            self.assertEqual(actual.brand, expected.brand)
+            self.assertEqual(actual.name, expected.name)
+            self.assertEqual(actual.url, expected.url)
+            self.assertEqual(actual.stock, expected.stock)
+            table.delete_item(
+                Key = {
+                    'ID': actual.name,
+                    'site':actual.site
+                }
+            )
+
 #test brand get
     def test_get_brand(self):
         mock_dict = {
