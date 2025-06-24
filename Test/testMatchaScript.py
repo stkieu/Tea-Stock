@@ -33,11 +33,16 @@ class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
                         <li class="active"><a href="/en/products/c24-marukyu-koyamaen-matcha">Marukyu Koyamaen</a></li>
                     </ul
                 </nav>
-                <table class="principal">
-                    <thead><tr><th>Name in<br><strong>Kanji</strong></th><th>Name in<br><strong>Latin characters</strong></th><th><strong>⚫ Koicha<br>⚪ Usucha</strong></th><th><strong>Item Code</strong></th><th>Unit price of<br><strong>20 g CAN</strong></th><th>Unit price of<br><strong>40 g CAN</strong></th><th>Unit price of<br><strong>100 g BAG</strong></th></tr></thead>
-                    <tr><td><a href="/en/products/p156-matcha-wako.html">和光</a></td><td><a href="/en/products/p156-matcha-wako.html">WAKO</a></td><td class="center">⚪</td><td><a href="/en/products/p156-matcha-wako.html">MMK006</a></td><td class="r">$14.58</td><td class="r">$25.92</td><td class="r">$58.86</td></tr>  
-                    <tr><td><a href="/en/products/p155-matcha-kinrin.html">金輪</a></td><td><a href="/en/products/p155-matcha-kinrin.html">KINRIN</a></td><td class="center">⚫⚪</td><td><a href="/en/products/p155-matcha-kinrin.html">MMK005</a></td><td class="r">$17.28</td><td class="r">$32.40</td><td class="r">-</td></tr>
-                </table>
+                <div id = "product-list"></div>
+                <div id = "product-list">
+                    <div class="product kw-usucha" data-name="Matcha Wako" data-price="0000000071604" data-date="2024-07-20-1604">
+                        <div class="product-name"><a href="/en/products/p156-matcha-wako.html">Matcha Wako</a></div>
+                    </div>
+
+                    <div class="product kw-usucha" data-name="Matcha Kinrin" data-price="0000000061602" data-date="2024-07-19-1602">
+                        <div class="product-name"><a href="/en/products/p155-matcha-kinrin.html">Matcha Kinrin</a></div>
+                    </div>
+                </div>
             </body>
         </html>
             '''
@@ -90,11 +95,16 @@ class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
                        <li class="active"><a href="/en/products/c85-yamamasa-koyamaen-matcha">Yamamasa Koyamaen</a></li>
                     </ul
                 </nav>
-                <table class="principal">
-                <thead><tr><th>Name in<br><strong>Kanji</strong></th><th>Name in<br><strong>Latin characters</strong></th><th><strong>⚫ Koicha<br>⚪ Usucha</strong></th><th><strong>Item Code</strong></th><th>Unit price of<br><strong>30 g CAN</strong></th><th>Unit price of<br><strong>100 g BAG</strong></th><th>Unit price of<br><strong>150 g CAN</strong></th><th>Unit price of<br><strong>300 g CAN</strong></th><th>Unit price of<br><strong>500 g BAG</strong></th><th>Unit price of<br><strong>1000 g BAG</strong></th></tr></thead>
-                <tr><td><a href="/en/products/p825-matcha-samidori.html">さみどり</a></td><td><a href="/en/products/p825-matcha-samidori.html">SAMIDORI</a></td><td class="center">⚪</td><td><a href="/en/products/p825-matcha-samidori.html">MYK010</a></td><td class="r">$9.72</td><td class="r">$27.00</td><td class="r">$43.20</td><td class="r">$79.92</td><td class="r">$127.44</td><td class="r">$251.64</td></tr>
-                <tr><td><a href="/en/products/p823-matcha-ogurayama.html">小倉山</a></td><td><a href="/en/products/p823-matcha-ogurayama.html">OGURAYAMA</a></td><td class="center">⚪</td><td><a href="/en/products/p823-matcha-ogurayama.html">MYK008</a></td><td class="r">$14.04</td><td class="r">$41.58</td><td class="r">$63.72</td><td class="r">$120.96</td><td class="r">$199.80</td><td class="r">$396.36</td></tr>
-                </table>
+                <div id = "product-list"></div>
+                <div id = "product-list">
+                    <div class="product kw-usucha" data-name="Matcha Samidori" data-price="0000000071604" data-date="2024-07-20-1604">
+                        <div class="product-name"><a href="/en/products/p825-matcha-samidori.html">Matcha Samidori</a></div>
+                    </div>
+
+                    <div class="product kw-usucha" data-name="Matcha Ogurayama" data-price="0000000061602" data-date="2024-07-19-1602">
+                        <div class="product-name"><a href="/en/products/p823-matcha-ogurayama.html">Matcha Ogurayama</a></div>
+                    </div>
+                </div>
             </body>
         </html>
             '''

@@ -20,9 +20,10 @@ def lambda_handler(event, context):
             if old_stock == '0' and new_stock == '1':
                 product_ID = new_image.get('ID', {}).get('S', 'Unknown Product') #dynamo struct -> no string detected then return unknown
                 url = new_image.get('url', {}).get('S', 'No URL')
+                site = new_image.get('site',{}).get('S', 'No site')
 
                 message = {
-                    "content": f"**{product_ID}** is now IN STOCK! \nGet it on Sazen: {url}"
+                    "content": f"**{product_ID}** is now IN STOCK! \nGet it on {site}: {url}"
                 }
 
                 try:

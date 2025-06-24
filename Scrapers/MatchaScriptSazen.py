@@ -10,22 +10,29 @@ class MatchaScriptSazen(MatchaScriptInterface):
     async def scrape_matchas(self, session, raw_URL, brand):  #'async' marks the method as a coroutine, pass in session from lambda (more efficient)
         try:
             soup = await self.soupify(session, raw_URL)
+            # print(soup.prettify())
             #get the ul with the matchas
-            matcha_types = soup.find(class_="principal") #should be the table
-            type_rows = matcha_types.findAll('tr')
+            matcha_types = soup.findAll(id="product-list") #should be div containing 1 div per item update: sazen is using duplicate ids? idex to work around
+            if not matcha_types:
+                print("No Matcha found")
+                return{}
             matcha_stock = {}
-            if not type_rows:
-                print("No matcha table found")
-                return {}
-            
+
             base_url = "https://www.sazentea.com"
             matcha_site = "Sazen"
             matcha_brand = brand
-            # each table item
-            for matcha in type_rows[1:]:
-                matcha_data = matcha.findAll('td')
-                matcha_name = matcha_data[1].text.strip()
-                matcha_url = base_url+matcha_data[1].find('a')['href']
+
+            for matcha in matcha_types[1].find_all("div", recursive=False): #want to be accessing each div child of the product list (want product not bestseller list hence index 1)
+                raw_name = matcha.find(class_="product-name").text
+                parts = raw_name.split()
+
+                if len(parts) > 1:
+                    rest = " ".join(parts[1:])
+                    matcha_name = rest.upper()
+                else:
+                    matcha_name = ""
+                    
+                matcha_url = base_url+matcha.find('a')['href']
 
                 webContent = await self.soupify(session, matcha_url)
                 info = webContent.find('strong', class_='red')
