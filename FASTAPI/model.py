@@ -6,3 +6,7 @@ class MatchaModel(BaseModel): #following matcha model
     brand: str
     url: str
     stock: str
+
+class TokenRequest(BaseModel):
+    client_id: str
+    client_secret: str
