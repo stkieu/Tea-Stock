@@ -7,7 +7,7 @@
 
 from Scrapers.MatchaScriptSazen import MatchaScriptSazen
 from Scrapers.matcha import Matcha
-from Scrapers.factory import get_scraper
+from Scrapers.factory import get_scraper, get_hybrid_scraper
 import unittest
 from unittest.mock import patch, AsyncMock, MagicMock
 import aiohttp
@@ -52,8 +52,8 @@ class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
 
         #site mssgs
         #want to mock session and get
-        out_of_stock = '<strong class="red">This product is unavailable at the moment. Please visit this page again in a few weeks.</strong>'
-        in_stock = ''
+        out_of_stock = ''
+        in_stock = '<form id="basket-add" method="get" action="/en/shop/add-to-basket"></form>'
 
         mock_get.side_effect = [
             self.make_mock_response(mock_table),
@@ -110,8 +110,8 @@ class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
             '''
         
         #site mssgs
-        in_stock = ''
-        out_of_stock = '<strong class="red">This product is unavailable at the moment. Please visit this page again in a few weeks.</strong>'
+        in_stock = '<form id="basket-add" method="get" action="/en/shop/add-to-basket"></form>'
+        out_of_stock = ''
 
         mock_get.side_effect = [
             self.make_mock_response(mock_table),
@@ -131,6 +131,39 @@ class testMatchaScriptSazen(unittest.IsolatedAsyncioTestCase):
         async with aiohttp.ClientSession() as session:
                 matcha_dict = await scraper_type.scrape_matchas(session, URL, 'Yamamasa Koyamaen')
         
+        for key in expected_dict:
+            self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
+            self.assertEqual(matcha_dict[key].url, expected_dict[key].url)
+            self.assertEqual(matcha_dict[key].stock, expected_dict[key].stock)
+    
+    #want to scrape the rest of the products that werent scraped initially
+    @patch('aiohttp.ClientSession.get')
+    async def test_Sazen_hybrid(self, mock_get):
+        #from initial scrape
+        
+        mock_unchecked = {
+            ('WAKO', 'Sazen'): Matcha (site='Sazen', brand='Marukyu Koyamaen', name = 'WAKO', stock = '0', url = 'https://www.sazentea.com/en/products/p156-matcha-wako.html'),
+            ('KINRIN', 'Sazen'): Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '0', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
+        }
+
+        in_stock = '<form id="basket-add" method="get" action="/en/shop/add-to-basket"></form>'
+        out_of_stock = ''
+        mock_get.side_effect = [
+            self.make_mock_response(in_stock),
+            self.make_mock_response(out_of_stock)
+        ]
+
+        expected_dict = {
+             ('KINRIN', 'Sazen'): Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '1', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html'),
+             ('KINRIN', 'Sazen'): Matcha(site='Sazen', brand='Marukyu Koyamaen', name = 'KINRIN', stock = '0', url =  'https://www.sazentea.com/en/products/p155-matcha-kinrin.html')
+        }
+        
+        scraper = get_hybrid_scraper('SazenHybrid')
+        scraper_type = scraper()
+
+        async with aiohttp.ClientSession() as session:
+                matcha_dict = await scraper_type.scrape_matchas(session, mock_unchecked)
+       
         for key in expected_dict:
             self.assertEqual(matcha_dict[key].name, expected_dict[key].name)
             self.assertEqual(matcha_dict[key].url, expected_dict[key].url)

@@ -5,12 +5,10 @@ import asyncio
 
 @ScraperRegistry.register("Sazen")
 class MatchaScriptSazen(MatchaScriptInterface):
-    
-
     async def scrape_matchas(self, session, raw_URL, brand):  #'async' marks the method as a coroutine, pass in session from lambda (more efficient)
         try:
             soup = await self.soupify(session, raw_URL)
-            # print(soup.prettify())
+
             #get the ul with the matchas
             matcha_types = soup.findAll(id="product-list") #should be div containing 1 div per item update: sazen is using duplicate ids? idex to work around
             if not matcha_types:
@@ -35,9 +33,9 @@ class MatchaScriptSazen(MatchaScriptInterface):
                 matcha_url = base_url+matcha.find('a')['href']
 
                 webContent = await self.soupify(session, matcha_url)
-                info = webContent.find('strong', class_='red')
+                info = webContent.find(id="basket-add")
 
-                if info == None:
+                if info != None:
                     stock_info = '1'
                 else:
                     stock_info = '0'
@@ -47,5 +45,5 @@ class MatchaScriptSazen(MatchaScriptInterface):
 
             return matcha_stock
         except Exception as e:
-            print(f"Error fetching data: {e}")
+            print(f"Sazen Error fetching data: {e}")
             return {}
