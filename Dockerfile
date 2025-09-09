@@ -19,4 +19,4 @@ CMD [ "aws_lambda.lambda_discord.lambda_handler" ]
 FROM base as lambda_API
 COPY common/ ${LAMBDA_TASK_ROOT}/common/
 COPY FASTAPI/ ${LAMBDA_TASK_ROOT}/FASTAPI/
-CMD [ "handlers.lambda1_handler.lambda_handler" ]j
+CMD [ "main.handler" ]
