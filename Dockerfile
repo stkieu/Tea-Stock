@@ -13,7 +13,8 @@ COPY Dict/ ${LAMBDA_TASK_ROOT}/Dict/
 CMD [ "aws_lambda.lambda.lambda_handler" ]
 
 FROM base as lambda_discord
-CMD [ "aws_lambda.lambda_disc.lambda_handler" ]
+COPY lambda_discord/ ${LAMBDA_TASK_ROOT}/lambdaDisc/
+CMD [ "aws_lambda.lambda_discord.lambda_handler" ]
 
 FROM base as lambda_API
 COPY common/ ${LAMBDA_TASK_ROOT}/common/
