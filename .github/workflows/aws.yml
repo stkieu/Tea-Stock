@@ -45,9 +45,6 @@ jobs:
         LAMBDA_FUNCTION: ${{ matrix.lambda_function }}
       run: |
         # Build a docker img (via Dockerfile) and push it to ECR
-        echo "Current directory: $(pwd)"
-        echo "Listing files:"
-        ls -R
         if [ "$LAMBDA_FUNCTION" = "fastapi_lambda" ]; then
           # Build FastAPI
           docker build -f FASTAPI/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
