@@ -5,10 +5,9 @@ on:
         workflows: ["Run Python Tests"]
         types:
         - completed
-        branches: [ main ]
+        branches: [ main, test-deployment ]
 env:
     AWS_REGION: ${{ secrets.AWS_REGION }}
-    ECR_REPOSITORY: matcha-tracker #CHANGE TO ENV SECRET
 
 jobs:
   deploy:
@@ -39,15 +38,15 @@ jobs:
 
     - name: Build and push image to ECR
       id: build-image
+      continue-on-error: false
       env:
-        #have 3 separate images
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ matrix.lambda_function }}
+        #Uses the git commit SHA
         IMAGE_TAG: ${{ github.sha }}
         LAMBDA_FUNCTION: ${{ matrix.lambda_function }}
       run: |
-        # Build a docker container (via Dockerfile) and push it to ECR
-
+        # Build a docker img (via Dockerfile) and push it to ECR
         if [ "$LAMBDA_FUNCTION" = "fastapi_lambda" ]; then
           # Build FastAPI
           docker build -f fastapi_lambda/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG fastapi_lambda/
@@ -61,3 +60,6 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+    - name: Verify image
+      run: |
+        docker run --rm $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --version || true
