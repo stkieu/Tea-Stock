@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, Query, HTTPException, APIRouter
 from model import MatchaModel
-import db
+import common.db as db
 import boto3
 from auth import verify_JWT_token
 

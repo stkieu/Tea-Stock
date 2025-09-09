@@ -4,8 +4,8 @@ on:
     workflow_run:
         workflows: ["Run Python Tests"]
         types:
-        - completed
-        branches: [ main, test-deployment ]
+          - completed
+        branches: [ main ]
 
 jobs:
   deploy:

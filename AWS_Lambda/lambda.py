@@ -5,7 +5,7 @@ import aiohttp
 import aioboto3
 from boto3.dynamodb.conditions import Key
 
-from FASTAPI.db import store_db
+from common.db import store_db
 from Dict.BrandDict import Brands_Dictionary
 from Scrapers.factory import get_scraper, get_hybrid_scraper
 from Scrapers.matcha import Matcha
