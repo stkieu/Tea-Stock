@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        lambda_function: [scraper_lambda, discord_lambda, fastapi_lambda]
+        lambda_function: [lambda_scrape, lambda_discord, fastapi_lambda]
 
     steps:
     - name: Checkout
@@ -47,8 +47,8 @@ jobs:
         # Build a docker img (via Dockerfile) and push it to ECR
         if [ "$LAMBDA_FUNCTION" = "fastapi_lambda" ]; then
           # Build FastAPI
-          docker build -f fastapi_lambda/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG fastapi_lambda/
-          docker build -f fastapi_lambda/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:latest fastapi_lambda/
+          docker build -f FASTAPI/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG fastapi_lambda/
+          docker build -f FASTAPI/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:latest fastapi_lambda/
         else
           # Build scraper and discord lambdas
           docker build --target $LAMBDA_FUNCTION -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
