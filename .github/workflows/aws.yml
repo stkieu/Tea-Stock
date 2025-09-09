@@ -1,0 +1,63 @@
+name: Build Docker Image and Deploy to ECR
+
+on:
+    workflow_run:
+        workflows: ["Run Python Tests"]
+        types:
+        - completed
+        branches: [ main ]
+env:
+    AWS_REGION: ${{ secrets.AWS_REGION }}
+    ECR_REPOSITORY: matcha-tracker #CHANGE TO ENV SECRET
+
+jobs:
+  deploy:
+    name: Deploy to ECR
+    runs-on: ubuntu-latest
+    environment: aws
+    #only want to deploy after tests pass successfully
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    strategy:
+      matrix:
+        lambda_function: [scraper_lambda, discord_lambda, fastapi_lambda]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push image to ECR
+      id: build-image
+      env:
+        #have 3 separate images
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ matrix.lambda_function }}
+        IMAGE_TAG: ${{ github.sha }}
+        LAMBDA_FUNCTION: ${{ matrix.lambda_function }}
+      run: |
+        # Build a docker container (via Dockerfile) and push it to ECR
+
+        if [ "$LAMBDA_FUNCTION" = "fastapi_lambda" ]; then
+          # Build FastAPI
+          docker build -f fastapi_lambda/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG fastapi_lambda/
+          docker build -f fastapi_lambda/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:latest fastapi_lambda/
+        else
+          # Build scraper and discord lambdas
+          docker build --target $LAMBDA_FUNCTION -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build --target $LAMBDA_FUNCTION -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        fi
+        echo "Pushing image to ECR..."
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
