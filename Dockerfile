@@ -1,51 +1,21 @@
-# syntax=docker/dockerfile:1
+FROM public.ecr.aws/lambda/python:3.13 as base
 
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/go/dockerfile-reference/
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
+COPY AWS_Lambda/ ${LAMBDA_TASK_ROOT}/AWS_Lambda/
+RUN pip install -r requirements.txt
 
-ARG PYTHON_VERSION=3.13
-FROM python:${PYTHON_VERSION}-slim as base
+FROM base as lambda_scrape
+COPY common/ ${LAMBDA_TASK_ROOT}/common/
+COPY lambda_scrape/ ${LAMBDA_TASK_ROOT}/lambda/
+COPY Dict/ ${LAMBDA_TASK_ROOT}/Dict/
+CMD [ "aws_lambda.lambda.lambda_handler" ]
 
-# Prevents Python from writing pyc files.
-ENV PYTHONDONTWRITEBYTECODE=1
+FROM base as lambda_discord
+CMD [ "aws_lambda.lambda_disc.lambda_handler" ]
 
-# Keeps Python from buffering stdout and stderr to avoid situations where
-# the application crashes without emitting any logs due to buffering.
-ENV PYTHONUNBUFFERED=1
-
-WORKDIR /app
-
-# Create a non-privileged user that the app will run under.
-# See https://docs.docker.com/go/dockerfile-user-best-practices/
-ARG UID=10001
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    appuser
-
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
-
-# Switch to the non-privileged user to run the application.
-USER appuser
-
-# Copy the source code into the container.
-COPY . .
-
-# Expose the port that the application listens on.
-EXPOSE 8000
-
-# Run the application.
-CMD python3 -m uvicorn app:app --host=0.0.0.0 --port=8000
+FROM base as lambda_API
+COPY common/ ${LAMBDA_TASK_ROOT}/common/
+COPY FASTAPI/ ${LAMBDA_TASK_ROOT}/FASTAPI/
+CMD [ "handlers.lambda1_handler.lambda_handler" ]j
