@@ -1,6 +1,5 @@
 zappa_settings.json
 venv
-FASTAPI/Dockerfile
 FASTAPI/.env
 .vscode/settings.json
 .vscode/settings.json
