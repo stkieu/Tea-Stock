@@ -3,3 +3,4 @@ venv
 FASTAPI/.env
 .vscode/settings.json
 .vscode/settings.json
+venv_name
