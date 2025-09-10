@@ -1,8 +1,8 @@
-name: Build Docker Image and Deploy to ECR
+name: build-docker-img-deplot-to-ecr
 
 on:
     workflow_run:
-        workflows: ["Run Python Tests"]
+        workflows: ["python-tests"]
         types:
           - completed
         branches: [ main ]
