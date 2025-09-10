@@ -1,4 +1,4 @@
-name: build-docker-img-deplot-to-ecr
+name: build-docker-img-deploy-to-ecr
 
 on:
     workflow_run:
