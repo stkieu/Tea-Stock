@@ -99,6 +99,8 @@ jobs:
         fi
 
         echo "BUILT_IMAGES=$BUILT_IMAGES" >> $GITHUB_ENV
+        echo "ECR_REGISTRY=$ECR_REGISTRY" >> $GITHUB_ENV
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
         echo "Built images: $BUILT_IMAGES"
 
     - name: Verify images exist locally
