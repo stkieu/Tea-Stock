@@ -35,7 +35,7 @@ class MatchaScriptMatchaJP(MatchaScriptInterface):
             for matcha in matcha_types: #access each matcha name in the brand list
                 matcha_name = matcha.find('a').text.strip()
                 matcha_url = base_url+ matcha.find('a')['href']
-                stock_info = -1
+                stock_info = None
                 webContent = await self.soupify(session, matcha_url)
                 info = webContent.find(class_ = 'product-grid')
                 

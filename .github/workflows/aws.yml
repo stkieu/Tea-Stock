@@ -6,18 +6,49 @@ on:
         types:
           - completed
         branches: [ main ]
-
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      scrape_changed: ${{ steps.detect.outputs.scrape_changed }}
+      discord_changed: ${{ steps.detect.outputs.discord_changed }}
+      fastapi_changed: ${{ steps.detect.outputs.fastapi_changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@v45
+
+      - name: Detect relevant changes
+        id: detect
+        run: |
+          scrape=false
+          discord=false
+          fastapi=false
+
+          for file in ${{ steps.changed.outputs.all_changed_files }}; do
+            if [[ $file == Scrapers/* || $file == Dict/* || $file == common/* ]]; then
+              scrape=true
+            fi
+            if [[ $file == AWS_Lambda/discord/* ]]; then
+              discord=true
+            fi
+            if [[ $file == FASTAPI/* || $file == common/* ]]; then
+              fastapi=true
+            fi
+          done
+
+          echo "scrape_changed=$scrape" >> $GITHUB_OUTPUT
+          echo "discord_changed=$discord" >> $GITHUB_OUTPUT
+          echo "fastapi_changed=$fastapi" >> $GITHUB_OUTPUT
   deploy:
     name: Deploy to ECR
     runs-on: ubuntu-latest
+    needs: detect-changes
     environment: aws
     #only want to deploy after tests pass successfully
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
-    strategy:
-      matrix:
-        lambda_function: [lambda_scrape, lambda_discord, fastapi_lambda]
 
     steps:
     - name: Checkout
@@ -34,30 +65,116 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build and push image to ECR
+    - name: Build Images
       id: build-image
       continue-on-error: false
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ matrix.lambda_function }}
+
         #Uses the git commit SHA
         IMAGE_TAG: ${{ github.sha }}
-        LAMBDA_FUNCTION: ${{ matrix.lambda_function }}
+        
+        #need to know the changes
+        SCRAPE_CHANGED: ${{ needs.detect-changes.outputs.scrape_changed }}
+        DISCORD_CHANGED: ${{ needs.detect-changes.outputs.discord_changed }}
+        FASTAPI_CHANGED: ${{ needs.detect-changes.outputs.fastapi_changed }}
       run: |
-        # Build a docker img (via Dockerfile) and push it to ECR
-        if [ "$LAMBDA_FUNCTION" = "fastapi_lambda" ]; then
-          # Build FastAPI
-          docker build -f FASTAPI/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build -f FASTAPI/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-        else
-          # Build scraper and discord lambdas
-          docker build --target $LAMBDA_FUNCTION -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build --target $LAMBDA_FUNCTION -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        BUILT_IMAGES=""
+        if [[ "$SCRAPE_CHANGED" == "true" ]]; then
+          docker build --target lambda_scrape -t $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG $ECR_REGISTRY/lambda_scrape:latest
+          BUILT_IMAGES="$BUILT_IMAGES scrape"
         fi
-        echo "Pushing image to ECR..."
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-    - name: Verify image
+
+        if [[ "$DISCORD_CHANGED" == "true" ]]; then
+          docker build --target lambda_discord -t $ECR_REGISTRY/lambda_discord:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/lambda_discord:$IMAGE_TAG $ECR_REGISTRY/lambda_discord:latest
+          BUILT_IMAGES="$BUILT_IMAGES discord"
+        fi
+
+        if [[ "$FASTAPI_CHANGED" == "true" ]]; then
+          docker build -f FASTAPI/Dockerfile -t $ECR_REGISTRY/fastapi_lambda:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/fastapi_lambda:$IMAGE_TAG $ECR_REGISTRY/fastapi_lambda:latest
+          BUILT_IMAGES="$BUILT_IMAGES fastapi"
+        fi
+
+        echo "BUILT_IMAGES=$BUILT_IMAGES" >> $GITHUB_ENV
+        echo "Built images: $BUILT_IMAGES"
+
+    - name: Verify images exist locally
       run: |
-        docker run --rm $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --version || true
+        for lambda in ${{ env.BUILT_IMAGES }}; do
+          case $lambda in
+            scrape)
+              docker inspect $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG
+              ;;
+            discord)
+              docker inspect $ECR_REGISTRY/lambda_discord:$IMAGE_TAG
+              ;;
+            fastapi)
+              docker inspect $ECR_REGISTRY/fastapi_lambda:$IMAGE_TAG
+              ;;
+          esac
+        done
+
+    - name: Push images to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        for lambda in ${{ env.BUILT_IMAGES }}; do
+          case $lambda in
+            scrape)
+              docker push $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG
+              docker push $ECR_REGISTRY/lambda_scrape:latest
+              ;;
+            discord)
+              docker push $ECR_REGISTRY/lambda_discord:$IMAGE_TAG
+              docker push $ECR_REGISTRY/lambda_discord:latest
+              ;;
+            fastapi)
+              docker push $ECR_REGISTRY/fastapi_lambda:$IMAGE_TAG
+              docker push $ECR_REGISTRY/fastapi_lambda:latest
+              ;;
+          esac
+        done
+
+    - name: Verify images in ECR
+      run: |
+        for lambda in ${{ env.BUILT_IMAGES }}; do
+          case $lambda in
+            scrape)
+              aws ecr describe-images --repository-name lambda_scrape --image-ids imageTag=$IMAGE_TAG
+              ;;
+            discord)
+              aws ecr describe-images --repository-name lambda_discord --image-ids imageTag=$IMAGE_TAG
+              ;;
+            fastapi)
+              aws ecr describe-images --repository-name fastapi_lambda --image-ids imageTag=$IMAGE_TAG
+              ;;
+          esac
+        done
+
+    - name: Update Lambda functions
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        for lambda in ${{ env.BUILT_IMAGES }}; do
+          case $lambda in
+            scrape)
+              aws lambda update-function-code \
+                --function-name lambda_scrape \
+                --image-uri $ECR_REGISTRY/lambda_scrape:latest
+              ;;
+            discord)
+              aws lambda update-function-code \
+                --function-name lambda_discord \
+                --image-uri $ECR_REGISTRY/lambda_discord:latest
+              ;;
+            fastapi)
+              aws lambda update-function-code \
+                --function-name fastapi_lambda \
+                --image-uri $ECR_REGISTRY/fastapi_lambda:latest
+              ;;
+          esac
+        done
