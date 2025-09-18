@@ -11,6 +11,3 @@ COPY common/ ${LAMBDA_TASK_ROOT}/common/
 COPY Scrapers/ ${LAMBDA_TASK_ROOT}/Scrapers/
 COPY Dict/ ${LAMBDA_TASK_ROOT}/Dict/
 CMD [ "AWS_Lambda.lambda.lambda_handler" ]
-
-FROM base AS lambda_discord
-CMD [ "AWS_Lambda.lambdaDisc.lambda_handler" ]
