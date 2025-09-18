@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       scrape_changed: ${{ steps.detect.outputs.scrape_changed }}
-      discord_changed: ${{ steps.detect.outputs.discord_changed }}
       fastapi_changed: ${{ steps.detect.outputs.fastapi_changed }}
     steps:
       - uses: actions/checkout@v4
@@ -24,15 +23,11 @@ jobs:
         id: detect
         run: |
           scrape=false
-          discord=false
           fastapi=false
 
           for file in ${{ steps.changed.outputs.all_changed_files }}; do
             if [[ $file == Scrapers/* || $file == Dict/* || $file == common/* ]]; then
               scrape=true
-            fi
-            if [[ $file == AWS_Lambda/discord/* ]]; then
-              discord=true
             fi
             if [[ $file == FASTAPI/* || $file == common/* ]]; then
               fastapi=true
@@ -40,7 +35,6 @@ jobs:
           done
 
           echo "scrape_changed=$scrape" >> $GITHUB_OUTPUT
-          echo "discord_changed=$discord" >> $GITHUB_OUTPUT
           echo "fastapi_changed=$fastapi" >> $GITHUB_OUTPUT
   deploy:
     name: Deploy to ECR
@@ -76,7 +70,6 @@ jobs:
         
         #need to know the changes
         SCRAPE_CHANGED: ${{ needs.detect-changes.outputs.scrape_changed }}
-        DISCORD_CHANGED: ${{ needs.detect-changes.outputs.discord_changed }}
         FASTAPI_CHANGED: ${{ needs.detect-changes.outputs.fastapi_changed }}
       run: |
         BUILT_IMAGES=""
@@ -84,12 +77,6 @@ jobs:
           docker build --target lambda_scrape -t $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG $ECR_REGISTRY/lambda_scrape:latest
           BUILT_IMAGES="$BUILT_IMAGES scrape"
-        fi
-
-        if [[ "$DISCORD_CHANGED" == "true" ]]; then
-          docker build --target lambda_discord -t $ECR_REGISTRY/lambda_discord:$IMAGE_TAG .
-          docker tag $ECR_REGISTRY/lambda_discord:$IMAGE_TAG $ECR_REGISTRY/lambda_discord:latest
-          BUILT_IMAGES="$BUILT_IMAGES discord"
         fi
 
         if [[ "$FASTAPI_CHANGED" == "true" ]]; then
@@ -110,9 +97,6 @@ jobs:
             scrape)
               docker inspect $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG
               ;;
-            discord)
-              docker inspect $ECR_REGISTRY/lambda_discord:$IMAGE_TAG
-              ;;
             fastapi)
               docker inspect $ECR_REGISTRY/fastapi_lambda:$IMAGE_TAG
               ;;
@@ -130,10 +114,6 @@ jobs:
               docker push $ECR_REGISTRY/lambda_scrape:$IMAGE_TAG
               docker push $ECR_REGISTRY/lambda_scrape:latest
               ;;
-            discord)
-              docker push $ECR_REGISTRY/lambda_discord:$IMAGE_TAG
-              docker push $ECR_REGISTRY/lambda_discord:latest
-              ;;
             fastapi)
               docker push $ECR_REGISTRY/fastapi_lambda:$IMAGE_TAG
               docker push $ECR_REGISTRY/fastapi_lambda:latest
@@ -147,9 +127,6 @@ jobs:
           case $lambda in
             scrape)
               aws ecr describe-images --repository-name lambda_scrape --image-ids imageTag=$IMAGE_TAG
-              ;;
-            discord)
-              aws ecr describe-images --repository-name lambda_discord --image-ids imageTag=$IMAGE_TAG
               ;;
             fastapi)
               aws ecr describe-images --repository-name fastapi_lambda --image-ids imageTag=$IMAGE_TAG
@@ -167,11 +144,6 @@ jobs:
               aws lambda update-function-code \
                 --function-name lambda_scrape \
                 --image-uri $ECR_REGISTRY/lambda_scrape:latest
-              ;;
-            discord)
-              aws lambda update-function-code \
-                --function-name lambda_discord \
-                --image-uri $ECR_REGISTRY/lambda_discord:latest
               ;;
             fastapi)
               aws lambda update-function-code \
