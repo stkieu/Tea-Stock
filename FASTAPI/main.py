@@ -4,7 +4,7 @@ from mangum import Mangum
 from FASTAPI.routes import router
 from auth import create_token
 from config import settings
-from model import TokenRequest
+from FASTAPI.model import TokenRequest
 
 app = FastAPI()
 app.include_router(router, prefix="/matcha")
