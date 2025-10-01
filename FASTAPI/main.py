@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from mangum import Mangum
-from routes import router
+from FASTAPI.routes import router
 from auth import create_token
 from config import settings
 from model import TokenRequest
