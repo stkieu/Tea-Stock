@@ -1,10 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from mangum import Mangum
-from FASTAPI.routes import router
-from auth import create_token
-from config import settings
-from FASTAPI.model import TokenRequest
+
+from .routes import router
+from .auth import create_token
+from .config import settings
+from .model import TokenRequest
 
 app = FastAPI()
 app.include_router(router, prefix="/matcha")
