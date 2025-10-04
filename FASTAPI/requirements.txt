@@ -1,4 +1,6 @@
 fastapi
-boto3
+aioboto3
 mangum
 uvicorn
+python-jose
+pydantic-settings

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, status, Request
 from fastapi.security import HTTPAuthorizationCredentials,HTTPBearer
 from jose import JWTError, jwt
-from config import settings
+from FASTAPI.config import settings
 
 #https://fastapi.tiangolo.com/reference/security/#fastapi.security.HTTPBearer
 SECRET_KEY = settings.SECRET_KEY

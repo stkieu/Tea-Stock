@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, Query, HTTPException, APIRouter
-from model import MatchaModel
+from FASTAPI.model import MatchaModel
 import common.db as db
-import boto3
-from auth import verify_JWT_token
+import aioboto3
+from FASTAPI.auth import verify_JWT_token
 
 
 #resouces:
@@ -15,37 +15,39 @@ from auth import verify_JWT_token
 
 router = APIRouter(dependencies=[Depends(verify_JWT_token)])
 
-def get_table():
-    dynamodb = boto3.resource("dynamodb", region_name="us-west-2")
-    return dynamodb.Table("Matcha")
+async def get_table():
+    session = aioboto3.Session(region_name="us-west-2")
+    async with session.resource("dynamodb") as dynamodb:
+        table = await dynamodb.Table("Matcha")
+        yield table
 
 
 @router.post('/')
-def add_matcha(matcha: MatchaModel, table=Depends(get_table)):
-    successful = db.store_db(matcha, table)
+async def add_matcha(matcha: MatchaModel, table=Depends(get_table)):
+    successful = await db.store_db(matcha, table)
     if not successful: #500 server error
         raise HTTPException(status_code=500, detail="Failed to update database.")
     return {"message": "Matcha received", "matcha": matcha}
 
 @router.get('/')
-def get_all_matcha(table = Depends(get_table)):
+async def get_all_matcha(table = Depends(get_table)):
     print("Getting all matcha...")
-    matchas = db.db_get_all(table)
+    matchas = await db.db_get_all(table)
     print("Fetched from DB:", matchas)
     if not matchas:
         raise HTTPException(status_code=404, detail="Matchas not found")
     return matchas
 
 @router.get('/{ID}')
-def get_matcha_named(ID:str, table = Depends(get_table)):
-    matcha = db.db_get_named(ID, table)
+async def get_matcha_named(ID:str, table = Depends(get_table)):
+    matcha = await db.db_get_named(ID, table)
     if not matcha:
         raise HTTPException(status_code=404, detail="Matcha name not found")
     return matcha
 
 @router.get('/{ID}/site/{site}')
-def get_matcha(ID: str, site: str, table=Depends(get_table)):
-    matcha = db.db_get(ID, site, table)
+async def get_matcha(ID: str, site: str, table=Depends(get_table)):
+    matcha = await db.db_get(ID, site, table)
     if not matcha: #404 not found
         raise HTTPException(status_code=404, detail="Matcha not found")
     return matcha
