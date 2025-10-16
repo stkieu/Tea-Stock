@@ -13,11 +13,7 @@
       integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
       crossorigin="anonymous"
       />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto:300,400,700"
-      rel="stylesheet"
-      type="text/css"
-    />
+    <link href="https://fonts.googleapis.com/css?family=Mukta" rel="stylesheet"/>
     <link href="style.css" type="text/css" rel="stylesheet" />
     <script>
         async function fetchProducts() {
@@ -33,17 +29,25 @@
 
           for (let i = 0; i < products.length; i++) {
             const product = products[i];
-            const { ID, url, stock } = product;
+            const { ID, url, brand, site, stock } = product;
 
             const row = document.createElement('tr');
             row.innerHTML = `
-              <td> 
+              <td class="product-name"> 
                 <a href="${url}" target="_blank">
                   ${ID}
                 </a>
               </td>
-              <td class="${stock === "0" ? 'text-oos' : 'text-is'}">
+              <td class="brand">
+                ${brand}
+              </td>
+              <td class="site">
+                ${site}
+              </td>
+              <td>
+              <span class="status ${stock === "0" ? 'status-oos' : 'status-is'}">
                 ${stock === "0" ? 'Out of Stock' : 'In Stock'}
+              </span>
               </td>
             `;
             productList.appendChild(row);
@@ -61,16 +65,16 @@
   <body>
     <header
       class="full-width-header fixed-top w-100"
-      style="background-color: #8ba888;"
+      style="background-color: rgba(139, 168, 136, 0.8);"
     >
       <div class="container">
-        <h1 class="text-center" style="font-size: 37px;">Matcha Watch</h1>
+        <h1 class="text-left" style="font-size: 37px;">Matcha Watch</h1>
       </div>
     </header>
 
     <section class="jumbotron" id="jumbo">
-      <div class="container text-center">
-        <h2 style="color : #f1ebe1;">Marukyu Koyamaen</h2>
+      <div class="container d-block img-fluid text-center">
+        <h2 style="color : #f1ebe1;">Uji Matchas</h2>
         <h3 style="color : #f1ebe1;">Principal Matchas</h3>
       </div>
     </section>
@@ -81,6 +85,8 @@
           <thead>
               <tr>
                   <th>Product Name</th>
+                  <th>Brand</th>
+                  <th>Site</th>
                   <th>Status</th>
               </tr>
           </thead>

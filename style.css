@@ -1,6 +1,5 @@
 body {
-  font-family: Roboto, sans-serif;
-  background-color:rgba(219, 204, 184, 0.265)
+  font-family: Mukta, sans-serif;
 }
 main {
   padding-left: 20px;
@@ -25,6 +24,10 @@ h1 {
 nav {
   display: flex;
   justify-content: flex-end;
+  height: 80px;
+  margin: 20px;
+  border: 2px;
+  border-radius: 16px;
 }
 
 a {
@@ -35,8 +38,9 @@ a {
 .jumbotron {
   display: flex;
   align-items: center;
-  background-image: url('https://images.unsplash.com/photo-1566373049939-704ea187ef98?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+  background-image: url(top-view-matcha-tea-with-wooden-scoop-teapot.jpg);
   background-size: cover;
+  background-position: center;
   color: #ffffff;
   height: 400px;
   padding-left: 0;
@@ -92,6 +96,60 @@ section .row img {
   overflow-x: auto; /* Enable horizontal scrolling */
   max-width: 100%;
   margin: 20px 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+table{
+  border-collapse: collapse;
+  box-shadow: 0px 5px 10px #e1e5ee;
+  overflow: hidden;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+thead{
+  box-shadow: 0px 5px 10px #e1e5ee;
+}
+
+th{
+  border: none;
+  padding: 1rem 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1 rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+td{
+  padding: 1rem 2rem;
+  border: none;
+}
+
+tr:nth-child(even){
+  background-color: #f4f6fb;
+}
+
+.status{
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 0.2rem;
+  background-color: gray;
+  padding: 0.2rem 1rem;
+  text-align: center;
+  width: 120px;
+  box-sizing: border-box; 
+}
+
+.status.status-is{
+  background-color: #c8e6c9;
+  color: #388e3c;
+}
+
+.status.status-oos{
+  background-color: #ffcdd2;
+  color: #c62828;
 }
 
 figure img {
